@@ -5,7 +5,9 @@
 
   - balance_due
 
-  You MUST include {{ form.media.js in your template }}, your form MUST have
-  id="payent-form", and the submit button MUST have id="pay"
+  You MUST include the following in your template:
+  - {{ form.media.js }}
+  - the payment form, where the form's id="payent-form"
+  - there is a div with id="payment-errors"
 
 {% endcomment %}

@@ -1,40 +1,56 @@
 Stripe.setPublishableKey('{{ PINAX_STRIPE_PUBLIC_KEY }}');
 
 
-$(function() {
-  var $form = $('#payment-form');
-  $form.submit(function(event) {
+document.addEventListener("DOMContentLoaded", function(contentLoadedEvent) {
+  console.log('DOMContentLoaded');
 
-    if ($form.find("input[name='stripe_token']").length) {
+  var form = document.getElementById("payment-form");
+  console.log(form);
+
+  form.addEventListener("submit", function(event) {
+
+    if (form.elements["stripe_token"]) {
       // If we've added the stripe token, then we're good to go.
       return true;
     }
 
+    // Prevent the form from being submitted:
+    event.preventDefault();
+
     // Disable the submit button to prevent repeated clicks:
-
-    $form.find('input[type=submit]').prop('disabled', true);
-
-    console.log($form.number);
+    form.querySelector('input[type=submit]').disabled = true;
 
     // Request a token from Stripe:
-    Stripe.card.createToken($form, stripeResponseHandler);
+    Stripe.card.createToken(form, stripeResponseHandler);
 
-    // Prevent the form from being submitted:
     return false;
   });
+
 });
 
 function stripeResponseHandler(status, response) {
   // Grab the form:
-  var $form = $('#payment-form');
-  var $submit = $form.find('input[type=submit]')
+  var form = document.getElementById("payment-form");
+
   if (response.error) { // Problem!
     console.log(response.error.message);
+    errorsTextId = "XXXX123-payment-errors-text";
 
     // Show the errors on the form:
-    $form.find('#payment-errors').text(response.error.message);
-    $form.find('#payment-errors-outer').show();
-    $submit.prop('disabled', false); // Re-enable submission
+    errorsDiv = document.getElementById('payment-errors');
+    errorsText = document.getElementById(errorsTextId);
+    if (errorsText) {
+      errorsText.remove();
+    }
+    errorsText = document.createElement("span");
+    errorsText.id=errorsTextId;
+    errorsDiv.insertAdjacentElement("beforeend", errorsText);
+    errorsText.insertAdjacentText("afterbegin", response.error.message);
+    errorsDiv.style = "";
+    errorsDiv.hidden = false;
+
+    // Re-enable submission
+    form.querySelector('input[type=submit]').disabled = false;
 
   } else { // Token was created!
     console.log(response);
@@ -43,13 +59,16 @@ function stripeResponseHandler(status, response) {
     var token = response.id;
 
     // Insert the token ID into the form so it gets submitted to the server:
-    $form = $form.append($('<input type="hidden" name="stripe_token" />').val(token));
+    stripeTokenElement = document.createElement("input");
+    stripeTokenElement.setAttribute("type", "hidden");
+    stripeTokenElement.setAttribute("name", "stripe_token");
+    stripeTokenElement.setAttribute("value", token);
+
+    form.insertAdjacentElement("beforeend", stripeTokenElement);
 
     // Submit the form:
-    /*
-    $form.get(0).submit();
-    $form.append($('<p>').text("Processing your payment. Please do not refresh."));
-    */
-    console.log("boop");
+    form.submit();
+    form.insertAdjacentHTML("afterend", "<p>Processing your payment. Please do not refresh.</p>");
+
   }
 };
