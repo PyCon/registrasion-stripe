@@ -1,0 +1,44 @@
+{% extends "registrasion/base.html" %}
+{% load registrasion_tags %}
+
+{% block title %}Credit card payment for invoice #{{ invoice.id}}{% endblock %}
+{% block heading %}Credit card payment for invoice #{{ invoice.id}}{% endblock %}
+{% block lede %}
+  Credit card payments are processed by <a href="https://stripe.com">Stripe</a>.
+  We do not store any of your credit card data locally, but instead Strip will securely tokenise your card details. To allow this, you must allow JavaScript from <code>js.stripe.com</code>.{% endblock %}
+
+{% block content %}
+
+  {% block balance_due_outer %}
+    <div>
+      <p>
+        {% block balance_due %}
+          You have ${{ invoice.balance_due }} remaining to pay on this invoice.
+        {% endblock %}
+      </p>
+    </div>
+  {% endblock %}
+
+  <h3>Card details</h3>
+
+  <form id="payment-form" method="post">
+
+    <div class="alert alert-danger" id="payment-errors-outer" style="display: none;">
+      <a class="close" data-dismiss="alert">×</a>
+      <span id="payment-errors"></span>
+    </div>
+
+    {% csrf_token %}
+    {% include "registrasion/form.html" %}
+
+    <div class="form-actions">
+      <input id="pay" class="btn btn-primary" type="submit" value="Pay {{ invoice.balance_due }}" />
+    </div>
+
+  </form>
+
+  {% block form_scripts %}
+    {{ form.media.js }}
+  {% endblock %}
+
+{% endblock %}

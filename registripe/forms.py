@@ -68,7 +68,7 @@ class CreditCardForm(forms.Form):
     def _media(self):
         js = (
             'https://js.stripe.com/v2/',
-            reverse("registripe_pubkey"),
+            reverse("registripe_form_handler"),
         )
 
         return forms.Media(js=js)

@@ -30,8 +30,19 @@ def _staff_only(user):
     return user.is_staff
 
 
-def pubkey_script(request):
-    ''' Returns a JS snippet that sets the Stripe public key for Stripe.js. '''
+def form_handler(request):
+    ''' Renders a js file to process Stripe payments. '''
+
+    data = {
+        "PINAX_STRIPE_PUBLIC_KEY": settings.PINAX_STRIPE_PUBLIC_KEY,
+    }
+
+    return render(
+        request,
+        "registrasion/stripe/js/form_handler.js",
+        data,
+        content_type="text/javascript",
+    )
 
     script_template = "Stripe.setPublishableKey('%s');"
     script = script_template % settings.PINAX_STRIPE_PUBLIC_KEY
