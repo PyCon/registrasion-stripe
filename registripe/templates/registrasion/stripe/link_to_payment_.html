@@ -1,0 +1,7 @@
+{% comment %}
+  This is used in the default credit_note.html file to display Stripe funcationality if the app is loaded.
+{% endcomment %}
+
+{% block content %}
+  <a class="btn btn-primary" href='{% url "registripe_card" invoice_id access_code %}'>Pay this invoice with Stripe</a>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% comment %}
+  This is used in the default invoice.html file to display Stripe funcationality if the app is loaded.
+{% endcomment %}
+
+{% block content %}
+  <h3>Stripe Refund</h3>
+
+  <p><a href="{% url 'registripe_refund' credit_note_id %}">View Stripe refund options</a></p>
+{% endblock %}
