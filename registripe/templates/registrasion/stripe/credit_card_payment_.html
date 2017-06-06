@@ -37,6 +37,15 @@
   </form>
 
   {% block form_scripts %}
+    {% block add_form_control_class_script %}
+      <script>
+        elements = document.getElementsByClassName("registrasion-stripe-element");
+        Array.prototype.forEach.call(elements, function(element) {
+          element.setAttribute("class", "{% block form_control_class %}form-control{% endblock %}");
+        });
+      </script>
+    {% endblock %}
+
     {{ form.media.js }}
   {% endblock %}
 

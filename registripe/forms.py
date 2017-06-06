@@ -1,4 +1,5 @@
 import copy
+import functools
 import models
 
 from django import forms
@@ -19,6 +20,21 @@ class NoRenderWidget(forms.widgets.HiddenInput):
 
     def render(self, name, value, attrs=None):
         return "<!-- no widget: " + name + " -->"
+
+
+class StripeCardElement(forms.widgets.TextInput):
+
+    def render(self, name, value, attrs=None):
+        element = '''
+            <div class="registrasion-stripe-element" id='%s' style='"-moz-appearance: textfield; -webkit-appearance: textfield;     appearance: field;"'>Please wait.</div>''' % (name, )
+
+        script = '''<script type='text/javascript'>
+            window.addEventListener('load', function(event){
+            %s_element = elements.create('card');
+            %s_element.mount('#%s');
+            });
+        </script>''' % (name, name, name)
+        return element + script
 
 
 def secure_striped(field):
@@ -67,7 +83,7 @@ class CreditCardForm(forms.Form):
 
     def _media(self):
         js = (
-            'https://js.stripe.com/v2/',
+            'https://js.stripe.com/v3/',
             reverse("registripe_form_handler"),
         )
 
@@ -75,72 +91,18 @@ class CreditCardForm(forms.Form):
 
     media = property(_media)
 
-    number = secure_striped(forms.CharField(
+    card = forms.CharField(
         required=False,
-        label="Credit card Number",
-        help_text="Your credit card number, with or without spaces.",
+        label="Credit card",
         max_length=255,
-    ))
-    exp_month = secure_striped(forms.IntegerField(
-        required=False,
-        label="Card expiry month",
-        min_value=1,
-        max_value=12,
-    ))
-    exp_year = secure_striped(forms.IntegerField(
-        required=False,
-        label="Card expiry year",
-        help_text="The expiry year for your card in 4-digit form",
-        min_value=timezone.now().year,
-    ))
-    cvc = secure_striped(forms.CharField(
-        required=False,
-        min_length=3,
-        max_length=4,
-    ))
+        widget=StripeCardElement()
+    )
 
     stripe_token = forms.CharField(
         max_length=255,
         #required=True,
         widget=NoRenderWidget(),
     )
-
-    name = striped(forms.CharField(
-        required=True,
-        label="Cardholder name",
-        help_text="The cardholder's name, as it appears on the credit card",
-        max_length=255,
-    ))
-    address_line1 = striped(forms.CharField(
-        required=True,
-        label="Cardholder account address, line 1",
-        max_length=255,
-    ))
-    address_line2 = striped(forms.CharField(
-        required=False,
-        label="Cardholder account address, line 2",
-        max_length=255,
-    ))
-    address_city = striped(forms.CharField(
-        required=True,
-        label="Cardholder account city",
-        max_length=255,
-    ))
-    address_state = striped(forms.CharField(
-        required=True,
-        max_length=255,
-        label="Cardholder account state or province",
-    ))
-    address_zip = striped(forms.CharField(
-        required=True,
-        max_length=255,
-        label="Cardholder account postal code",
-    ))
-    address_country = striped(LazyTypedChoiceField(
-        label="Cardholder account country",
-        choices=countries,
-        widget=CountrySelectWidget,
-    ))
 
 
 class StripeRefundForm(forms.Form):
@@ -188,29 +150,3 @@ class StripeRefundForm(forms.Form):
         required=True,
         queryset=models.StripePayment.objects.all(),
     )
-
-
-'''{
-From stripe.js details:
-
-Card details:
-
-The first argument to createToken is a JavaScript object containing credit card data entered by the user. It should contain the following required members:
-
-number: card number as a string without any separators (e.g., "4242424242424242")
-exp_month: two digit number representing the card's expiration month (e.g., 12)
-exp_year: two or four digit number representing the card's expiration year (e.g., 2017)
-(The expiration date can also be passed as a single string.)
-
-cvc: optional, but we highly recommend you provide it to help prevent fraud. This is the card's security code, as a string (e.g., "123").
-The following fields are entirely optional and cannot result in a token creation failure:
-
-name: cardholder name
-address_line1: billing address line 1
-address_line2: billing address line 2
-address_city: billing address city
-address_state: billing address state
-address_zip: billing postal code as a string (e.g., "94301")
-address_country: billing address country
-}
-'''
