@@ -10,7 +10,7 @@
 {% block content %}
 
   {% block balance_due_outer %}
-    <div>
+    <div class="alert alert-info">
       <p>
         {% block balance_due %}
           You have ${{ invoice.balance_due }} remaining to pay on this invoice.
@@ -19,22 +19,23 @@
     </div>
   {% endblock %}
 
-  <h3>Card details</h3>
-
-  <form id="payment-form" method="post">
-
-    <div class="alert alert-danger" id="payment-errors" style="display: none;">
-      <a class="close" data-dismiss="alert">×</a>
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <h3 class="panel-title">Card details</h3>
     </div>
+    <form id="payment-form" method="post">
 
-    {% csrf_token %}
-    {% include "registrasion/form.html" %}
+      <div class="panel-body">
+        {% csrf_token %}
+        {% include "registrasion/form.html" %}
+      </div>
 
-    <div class="form-actions">
-      <input id="pay" class="btn btn-primary" type="submit" value="Pay {{ invoice.balance_due }}" />
-    </div>
+      <div class="panel-footer">
+        <input id="pay" class="btn btn-primary" type="submit" value="Pay {{ invoice.balance_due }}" />
+      </div>
 
-  </form>
+    </form>
+  </div>
 
   {% block form_scripts %}
     {% block add_form_control_class_script %}
