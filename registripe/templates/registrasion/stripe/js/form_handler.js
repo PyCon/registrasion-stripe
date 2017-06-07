@@ -7,17 +7,12 @@ function stripeify(elementId) {
 
   var htmlElement = document.getElementById(elementId);
   var errors = elementId + "-errors";
-  htmlElement.insertAdjacentHTML("afterend", "<div id='" + errors + "' role='alert'></div>");
+  htmlElement.insertAdjacentHTML("afterend", "<div id='" + errors + "' role='alert' class='help-block'></div>");
   var displayError = document.getElementById(errors);
 
   //Handle real-time validation errors from the card Element.
   element.addEventListener('change', function(event) {
-    if (event.error) {
-      console.log("error");
-      displayError.textContent = event.error.message;
-    } else {
-      displayError.textContent = '';
-    }
+    toggleErrorMessage(displayError, event.error);
   });
 
   // Create a token or display an error when the form is submitted.
@@ -28,7 +23,7 @@ function stripeify(elementId) {
     stripe.createToken(element).then(function(result) {
       if (result.error) {
         // Inform the user if there was an error
-        displayError.textContent = result.error.message;
+        toggleErrorMessage(displayError, result.error);
       } else {
         // Send the token to your server
         stripeTokenHandler(result.token);
@@ -36,6 +31,23 @@ function stripeify(elementId) {
     });
   });
 }
+
+function toggleErrorMessage(errorElement, maybeError) {
+  errorClass = inputErrorClassName();
+  if (maybeError) {
+    errorElement.textContent = maybeError.message;
+    errorElement.parentNode.classList.add(errorClass);
+  } else {
+    errorElement.textContent = '';
+    errorElement.parentNode.classList.remove(errorClass);
+  }
+}
+
+
+function inputErrorClassName() {
+  return {% block form_control_error_class %}"has-error"{% endblock %};
+}
+
 
 function stripeTokenHandler(token) {
   // Insert the token ID into the form so it gets submitted to the server
