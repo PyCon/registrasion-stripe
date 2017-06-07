@@ -16,67 +16,30 @@ from django_countries.widgets import CountrySelectWidget
 from pinax.stripe import models as pinax_stripe_models
 
 
-class NoRenderWidget(forms.widgets.HiddenInput):
-
-    def render(self, name, value, attrs=None):
-        return "<!-- no widget: " + name + " -->"
-
-
 class StripeCardElement(forms.widgets.TextInput):
 
     def render(self, name, value, attrs=None):
         element = '''
             <div class="registrasion-stripe-element" id='%s' style='"-moz-appearance: textfield; -webkit-appearance: textfield;     appearance: field;"'>Please wait.</div>''' % (name, )
 
-        script = '''<script type='text/javascript'>
-            window.addEventListener('load', function(event){
-            %s_element = elements.create('card');
-            %s_element.mount('#%s');
-            });
-        </script>''' % (name, name, name)
+        script = '''
+            <script type='text/javascript'>
+                window.addEventListener('load', function(event){
+                    stripeify('%s');
+                });
+            </script>''' % (name)
         return element + script
 
 
-def secure_striped(field):
-    ''' Calls stripe() with secure=True. '''
-    return striped(field, True)
-
-
-def striped(field, secure=False):
-
-    oldwidget = field.widget
-    field.widget = StripeWidgetProxy(oldwidget, secure)
-    return field
-
-
-class StripeWidgetProxy(widgets.Widget):
-
-    def __init__(self, underlying, secure=False):
-        self.underlying = underlying
-        self.secure = secure
-
-    def __deepcopy__(self, memo):
-        copy_underlying = copy.deepcopy(self.underlying, memo)
-        return type(self)(copy_underlying, self.secure)
-
-    def __getattribute__(self, attr):
-        spr = super(StripeWidgetProxy, self).__getattribute__
-        if attr in ("underlying", "render", "secure", "__deepcopy__"):
-            return spr(attr)
-        else:
-            return getattr(self.underlying, attr)
+class StripeTokenWidget(forms.widgets.HiddenInput):
 
     def render(self, name, value, attrs=None):
 
-        if not attrs:
-            attrs = {}
-
-        attrs["data-stripe"] = name
-
-        if self.secure:
-            name = ""
-
-        return self.underlying.render(name, value, attrs=attrs)
+        return '''
+            <div class='registrasion-stripe-token' style='display:none;'
+            data-input-id='%s'
+            ></div>
+        ''' % (name, )
 
 
 class CreditCardForm(forms.Form):
@@ -101,7 +64,7 @@ class CreditCardForm(forms.Form):
     stripe_token = forms.CharField(
         max_length=255,
         #required=True,
-        widget=NoRenderWidget(),
+        widget=StripeTokenWidget(),
     )
 
 
