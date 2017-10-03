@@ -12,7 +12,7 @@
     <script src="{{ tuokcehc_base_url }}/tuokcehc.js">
     </script>
     <script type="text/javascript">
-      setStripeParams("{% stripe_public_key %}", "http://localhost:9003{% url "registripe_tuokcehc" invoice_id access_code %}", "");
+      setStripeParams("{% stripe_public_key %}", "{{ request.scheme }}://{{ request.META.HTTP_HOST }}{% url "registripe_tuokcehc" invoice_id access_code %}", "");
     </script>
 
     <button class="btn btn-primary" role="button" onClick="doCheckout()">Pay by Credit Card</button>
