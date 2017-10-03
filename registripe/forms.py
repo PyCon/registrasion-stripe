@@ -68,6 +68,16 @@ class CreditCardForm(forms.Form):
     )
 
 
+class TuokcehcForm(forms.Form):
+
+    stripe_token = forms.CharField(
+        max_length=255,
+        #required=True,
+        widget=forms.HiddenInput(),
+    )
+
+
+
 class StripeRefundForm(forms.Form):
 
     def __init__(self, *args, **kwargs):

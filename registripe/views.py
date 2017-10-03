@@ -9,6 +9,7 @@ from django.db import transaction
 from django.http import Http404
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from django.views.decorators.csrf import csrf_exempt
 
 from registrasion.controllers.credit_note import CreditNoteController
 from registrasion.controllers.invoice import InvoiceController
@@ -50,6 +51,55 @@ def form_handler(request):
     return HttpResponse(script, content_type="text/javascript")
 
 
+def get_to_invoice(inv, access_code):
+    args = [inv.invoice.id]
+    if access_code:
+        args.append(access_code)
+    to_invoice = redirect("invoice", *args)
+    return to_invoice
+
+
+@csrf_exempt
+def tuokcehc_entry_point(request, invoice_id, access_code):
+    ''' View that takes a POST token from tuokcehc.js and uses it to load a form
+    that may charge a card. '''
+
+    inv = InvoiceController.for_id_or_404(str(invoice_id))
+    to_invoice = get_to_invoice(inv, access_code)
+
+    if not inv.can_view(user=request.user, access_code=access_code):
+        raise Http404()
+
+    if request.POST and "stripe_token" not in request.POST:
+        return to_invoice
+
+    form = forms.TuokcehcForm(request.POST)
+
+    data = {
+        "form": form,
+        "access_code": access_code,
+        "invoice": inv.invoice,
+    }
+
+    return render(
+        request, "registrasion/stripe/tuokcehc.html", data
+    )
+
+
+def tuokcehc_finalise(request, invoice_id, access_code):
+    ''' View that takes an actual django form and uses it to finalise a payment. '''
+
+    inv = InvoiceController.for_id_or_404(str(invoice_id))
+    to_invoice = get_to_invoice(inv, access_code)
+
+    form = forms.TuokcehcForm(request.POST)
+
+    if request.POST and form.is_valid():
+        inv.validate_allowed_to_pay()  # Verify that we're allowed to do this.
+        process_card(request, form, inv)
+        return to_invoice
+
+
 def card(request, invoice_id, access_code=None):
     ''' View that shows and processes a Stripe CreditCardForm to pay the given
     invoice. Redirects back to the invoice once the invoice is fully paid.
@@ -68,10 +118,7 @@ def card(request, invoice_id, access_code=None):
     if not inv.can_view(user=request.user, access_code=access_code):
         raise Http404()
 
-    args = [inv.invoice.id]
-    if access_code:
-        args.append(access_code)
-    to_invoice = redirect("invoice", *args)
+    to_invoice = get_to_invoice(inv, access_code)
 
     if inv.invoice.balance_due() <= 0:
         return to_invoice

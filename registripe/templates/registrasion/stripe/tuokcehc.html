@@ -1,0 +1,22 @@
+{% extends "registrasion/base.html" %}
+
+{% block heading %}Confirm Payment{% endblock %}
+
+{% block content %}
+
+
+  <form method="post" action="{% url "registripe_tuokcehc_finalise" invoice.id access_code %}">
+    <div class="btn-group">
+      {% csrf_token %}
+      {{ form }}
+      <button class="btn btn-lg btn-primary" role="submit">Pay {{ invoice.balance_due }}</button>
+      <a href="{% url "dashboard" %}" class="btn btn-lg btn-default" role="button">Return to dashboard</a>
+    </div>
+  </form>
+
+  <br />
+  <br />
+
+  {% include "registrasion/invoice/details.html" %}
+
+{% endblock %}
