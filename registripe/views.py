@@ -95,8 +95,15 @@ def tuokcehc_finalise(request, invoice_id, access_code):
     form = forms.TuokcehcForm(request.POST)
 
     if request.POST and form.is_valid():
-        inv.validate_allowed_to_pay()  # Verify that we're allowed to do this.
-        process_card(request, form, inv)
+        try:
+            inv.validate_allowed_to_pay()  # Verify that we're allowed to do this.
+            process_card(request, form, inv)
+        except StripeError as e:
+            body = e.json_body
+            err  = body.get('error', {})
+            message = err.get('message')
+            messages.error(request, "There was an issue processing your card: " + message)
+
         return to_invoice
 
 
