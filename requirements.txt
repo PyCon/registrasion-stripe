@@ -1,4 +1,4 @@
-django-countries==4.0
-pinax-stripe==3.2.1
+django-countries>=4.0
+pinax-stripe==4.4.0
 requests>=2.11.1
-stripe==1.38.0
+stripe>=2.37.2
