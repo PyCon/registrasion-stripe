@@ -15,6 +15,9 @@ from django_countries.widgets import CountrySelectWidget
 
 from pinax.stripe import models as pinax_stripe_models
 
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Field, Fieldset, Div, HTML, ButtonHolder, Submit
+
 
 class StripeCardElement(forms.widgets.TextInput):
 
@@ -43,6 +46,11 @@ class StripeTokenWidget(forms.widgets.HiddenInput):
 
 
 class CreditCardForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        super(CreditCardForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_tag = False
 
     def _media(self):
         js = (
@@ -89,9 +97,12 @@ class StripeRefundForm(forms.Form):
                 show (currently, credit notes can only be cashed out in full.)
 
         '''
+
         user = kwargs.pop('user', None)
         min_value = kwargs.pop('min_value', None)
         super(StripeRefundForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_tag = False
 
         payment_field = self.fields['payment']
         qs = payment_field.queryset
