@@ -1,9 +1,9 @@
 import copy
 import functools
-import models
+from . import models
 
 from django import forms
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.db.models import F, Q
 from django.forms import widgets
@@ -18,7 +18,7 @@ from pinax.stripe import models as pinax_stripe_models
 
 class StripeCardElement(forms.widgets.TextInput):
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         element = '''
             <div class="registrasion-stripe-element" id='%s' style='"-moz-appearance: textfield; -webkit-appearance: textfield;     appearance: field;"'>Please wait.</div>''' % (name, )
 
@@ -33,7 +33,7 @@ class StripeCardElement(forms.widgets.TextInput):
 
 class StripeTokenWidget(forms.widgets.HiddenInput):
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
 
         return '''
             <div class='registrasion-stripe-token' style='display:none;'

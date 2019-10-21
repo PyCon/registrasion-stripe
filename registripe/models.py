@@ -7,8 +7,8 @@ from pinax.stripe.models import Charge
 
 class StripePayment(commerce.PaymentBase):
 
-    charge = models.ForeignKey(Charge)
+    charge = models.ForeignKey(Charge, on_delete=models.CASCADE)
 
 class StripeCreditNoteRefund(commerce.CreditNoteRefund):
 
-    charge = models.ForeignKey(Charge)
+    charge = models.ForeignKey(Charge, on_delete=models.CASCADE)
