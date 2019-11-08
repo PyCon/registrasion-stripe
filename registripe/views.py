@@ -164,6 +164,7 @@ def process_card(request, form, inv):
     amount_to_pay = inv.invoice.balance_due()
     user = inv.invoice.user
     token = form.cleaned_data["stripe_token"]
+    idempotency_key = form.cleaned_data["idempotency_key"]
 
     customer = actions.customers.get_customer_for_user(user)
 
@@ -182,6 +183,7 @@ def process_card(request, form, inv):
         source=card,
         currency=CURRENCY,
         description=description,
+        idempotency_key=idempotency_key,
         capture=True,
     )
 

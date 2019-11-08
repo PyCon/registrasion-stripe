@@ -1,5 +1,6 @@
 import copy
 import functools
+import uuid
 from . import models
 
 from django import forms
@@ -45,6 +46,10 @@ class StripeTokenWidget(forms.widgets.HiddenInput):
         ''' % (name, )
 
 
+def generate_uuid():
+    return str(uuid.uuid4())
+
+
 class CreditCardForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
@@ -73,6 +78,12 @@ class CreditCardForm(forms.Form):
         max_length=255,
         #required=True,
         widget=StripeTokenWidget(),
+    )
+
+    idempotency_key = forms.CharField(
+        max_length=36,
+        initial=generate_uuid,
+        widget=forms.HiddenInput(),
     )
 
 
