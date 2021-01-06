@@ -1,4 +1,4 @@
 django-countries>=4.0
-https://github.com/PyCon/pinax-stripe/archive/pycon.tar.gz
+pinax-stripe @ https://github.com/PyCon/pinax-stripe/archive/pycon.tar.gz
 requests>=2.11.1
 stripe>=2.37.2
